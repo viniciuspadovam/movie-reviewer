@@ -34,3 +34,17 @@ springdoc:
     enabled: ${OPENAPI_ENABLED:false}
   swagger-ui:
     enabled: ${OPENAPI_ENABLED:false}
+
+app:
+  web:
+    frontend-origin: ${FRONTEND_ORIGIN}
+  auth:
+    username: ${ADMIN_USERNAME}
+    password-hash: ${ADMIN_PASSWORD_HASH}
+    jwt-secret: ${JWT_SECRET}
+    session-ttl: 7d
+    cookie-domain: ${COOKIE_DOMAIN:}
+    cookie-secure: true
+    login-rate-limit:
+      attempts: 5
+      period: 15m

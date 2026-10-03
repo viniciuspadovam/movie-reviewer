@@ -1,0 +1,8 @@
+app:
+  web:
+    frontend-origin: http://localhost:4200
+  auth:
+    username: admin
+    password-hash: "$2a$10$1UtML8DthGlqRfUE9s.LJetT3lm1YjfQ4qLKTmjo7CySXKNR37i2i"
+    jwt-secret: test-only-secret-0123456789abcdef0123456789
+    cookie-secure: false

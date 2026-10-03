@@ -1,0 +1,15 @@
+# Local development only. Login: admin / admin.
+app:
+  web:
+    frontend-origin: http://localhost:4200
+  auth:
+    username: admin
+    password-hash: "$2a$10$1UtML8DthGlqRfUE9s.LJetT3lm1YjfQ4qLKTmjo7CySXKNR37i2i"
+    jwt-secret: dev-only-secret-change-me-0123456789abcdef
+    cookie-secure: false
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

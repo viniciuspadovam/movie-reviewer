@@ -54,7 +54,10 @@ Produção: API em VM Oracle Cloud Always Free (ARM64) exposta só via Cloudflar
 - Banco local: `docker compose -f infra/docker-compose.dev.yml up -d` (Postgres 18 em `localhost:5432`, banco/usuário/senha `moviereview`). Se o daemon não responder, inicie o Docker Desktop.
 - Ambiente de desenvolvimento: Windows com Java 25 e Docker. Não há Maven global (use o wrapper). No PowerShell, use `.\mvnw.cmd`; no Git Bash, `./mvnw`.
 - Backend (em `backend/`): `./mvnw spring-boot:run` · testes + integração: `./mvnw verify` · um teste: `./mvnw test -Dtest=ClassName#method`
-- Testes de integração usam Testcontainers (Docker precisa estar rodando); o TMDB é mockado com WireMock.
+- Rodar local: `./mvnw spring-boot:run -Dspring-boot.run.profiles=dev` (`application-dev.yml`: login `admin`/`admin`, Swagger em `/swagger-ui.html`). Sem o perfil `dev`, a aplicação exige as variáveis de ambiente `FRONTEND_ORIGIN`, `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH` e `JWT_SECRET`.
+- Testes de integração usam Testcontainers (Docker precisa estar rodando); o TMDB é mockado com WireMock. Anote a classe com `@IntegrationTest` (perfil `test` + Postgres + MockMvc).
+- Em testes, **não use** o `csrf()` do spring-security-test: ele troca o repositório de CSRF no contexto em cache e quebra outros testes. Use `TestRequests.xsrf()` (par cookie + header, como o Angular) e `TestRequests.fromNewIp()` para não esbarrar no rate limit de login.
+- O `MockHttpServletResponse` não imprime `SameSite` de cookies criados via `addCookie`. Verifique com `cookie().sameSite(...)`, não com o texto do header `Set-Cookie`.
 - Frontend: `ng serve` (com proxy para a API) · `ng test` · `ng build` · deploy: `wrangler deploy`
 - E2E: Playwright (fluxo: login → importar obra → criar/editar reviews → ver como visitante).
 - Imagem da API precisa ser `linux/arm64` (buildx), porque a VM é Ampere.
