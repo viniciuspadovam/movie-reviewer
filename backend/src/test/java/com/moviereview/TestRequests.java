@@ -3,6 +3,10 @@ package com.moviereview;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import jakarta.servlet.http.Cookie;
@@ -29,6 +33,18 @@ public final class TestRequests {
 			request.addHeader("CF-Connecting-IP", ip);
 			return request;
 		};
+	}
+
+	public static Cookie adminSession(MockMvc mockMvc) throws Exception {
+		return mockMvc
+			.perform(post("/api/v1/auth/login").with(xsrf())
+				.with(fromNewIp())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"username": "admin", "password": "admin"}"""))
+			.andReturn()
+			.getResponse()
+			.getCookie("AUTH_TOKEN");
 	}
 
 	private static Cookie[] appendCookie(Cookie[] cookies, Cookie cookie) {

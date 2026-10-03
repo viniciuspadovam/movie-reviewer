@@ -5,12 +5,15 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -52,6 +55,11 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 			.body(ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage()));
 	}
 
+	@ExceptionHandler(ExternalServiceException.class)
+	ProblemDetail handleExternalService(ExternalServiceException exception) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, exception.getMessage());
+	}
+
 	@ExceptionHandler(Exception.class)
 	ProblemDetail handleUnexpected(Exception exception) {
 		log.error("Erro inesperado ao processar a requisição", exception);
@@ -69,6 +77,33 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Dados inválidos.");
 		problem.setProperty("errors", errors);
 		return ResponseEntity.badRequest().body(problem);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException exception,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		Map<String, String> errors = exception.getParameterValidationResults()
+			.stream()
+			.collect(Collectors.toMap(result -> result.getMethodParameter().getParameterName(),
+					result -> result.getResolvableErrors().getFirst().getDefaultMessage(), (first, second) -> first));
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Parâmetros inválidos.");
+		problem.setProperty("errors", errors);
+		return ResponseEntity.badRequest().body(problem);
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException exception, HttpHeaders headers,
+			HttpStatusCode status, WebRequest request) {
+		return ResponseEntity.badRequest()
+			.body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+					"Valor inválido para o parâmetro " + exception.getPropertyName() + "."));
+	}
+
+	@Override
+	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException exception,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		return ResponseEntity.badRequest()
+			.body(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "O corpo da requisição é inválido."));
 	}
 
 	private String messageOf(FieldError error) {

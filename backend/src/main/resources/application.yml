@@ -48,3 +48,8 @@ app:
     login-rate-limit:
       attempts: 5
       period: 15m
+  tmdb:
+    base-url: https://api.themoviedb.org/3
+    access-token: ${TMDB_ACCESS_TOKEN:}
+    language: pt-BR
+    timeout: 5s
