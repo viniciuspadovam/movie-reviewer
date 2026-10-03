@@ -39,6 +39,8 @@ Produção: API em VM Oracle Cloud Always Free (ARM64) exposta só via Cloudflar
 - **DRY:** extraia lógica repetida (conversão de nota, geração de slug, mapeamento entity↔DTO, tratamento de erro via `ProblemDetail` em um `@RestControllerAdvice` único). Não duplique validação entre camadas sem motivo.
 - **KISS / YAGNI:** implemente só o que o plano pede para a v1. Sem abstrações especulativas.
 - Entidades JPA nunca saem pela API: use DTOs (`record`). Injeção por construtor, sem `@Autowired` em campo.
+- `open-in-view` está desligado: services devolvem DTOs montados **dentro** da transação (senão há `LazyInitializationException`).
+- Não use `@Validated` em controllers: as constraints em `@RequestParam`/`@PathVariable` já são validadas pelo Spring MVC e caem no `GlobalExceptionHandler` como 400 com mensagens em português. Com `@Validated`, viram `ConstraintViolationException` e retornam 500.
 - No Angular: componentes standalone, signals para estado, lógica de acesso à API em services, componentes de apresentação sem chamadas HTTP.
 
 ## Fluxo de git
