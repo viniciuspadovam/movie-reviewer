@@ -16,6 +16,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 	Page<Review> findByStatusOrderByPublishedAtDesc(ReviewStatus status, Pageable pageable);
 
 	@EntityGraph(attributePaths = "title")
+	Optional<Review> findWithTitleById(Long id);
+
+	@EntityGraph(attributePaths = "title")
 	Optional<Review> findByIdAndStatus(Long id, ReviewStatus status);
 
 	@EntityGraph(attributePaths = "title")
