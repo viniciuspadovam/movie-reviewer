@@ -51,7 +51,7 @@ Produção: API em VM Oracle Cloud Always Free (ARM64) exposta só via Cloudflar
 
 ## Comandos (planejados; confirme quando o código existir)
 
-- Banco local: `docker compose up` (em `infra/`)
+- Banco local: `docker compose -f infra/docker-compose.dev.yml up -d` (Postgres 18 em `localhost:5432`, banco/usuário/senha `moviereview`). Se o daemon não responder, inicie o Docker Desktop.
 - Ambiente de desenvolvimento: Windows com Java 25 e Docker. Não há Maven global (use o wrapper). No PowerShell, use `.\mvnw.cmd`; no Git Bash, `./mvnw`.
 - Backend (em `backend/`): `./mvnw spring-boot:run` · testes + integração: `./mvnw verify` · um teste: `./mvnw test -Dtest=ClassName#method`
 - Testes de integração usam Testcontainers (Docker precisa estar rodando); o TMDB é mockado com WireMock.
