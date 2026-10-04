@@ -7,6 +7,9 @@ app:
     password-hash: "$2a$10$1UtML8DthGlqRfUE9s.LJetT3lm1YjfQ4qLKTmjo7CySXKNR37i2i"
     jwt-secret: dev-only-secret-change-me-0123456789abcdef
     cookie-secure: false
+    login-rate-limit:
+      attempts: 100
+      period: 15m
 
 springdoc:
   api-docs:

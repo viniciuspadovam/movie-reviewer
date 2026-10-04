@@ -26,7 +26,7 @@ const VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
               [checked]="rating() === value"
               (change)="rating.set(value)"
             />
-            <span class="visually-hidden">{{ label(value) }} estrelas</span>
+            <span class="visually-hidden">{{ label(value) }} {{ value === 2 ? 'estrela' : 'estrelas' }}</span>
           </label>
         }
       </div>

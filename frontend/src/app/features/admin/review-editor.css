@@ -7,7 +7,6 @@
 }
 
 .year {
-  margin-left: 0.25em;
   color: var(--color-text-muted);
   font-weight: 400;
 }

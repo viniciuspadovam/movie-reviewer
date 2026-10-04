@@ -33,7 +33,7 @@
             <app-poster [path]="result.posterPath" [name]="result.name" size="w185" />
             <div class="result-body">
               <h2>
-                {{ result.name }}@if (result.releaseYear) { <span class="year">({{ result.releaseYear }})</span>}
+                {{ result.name }}@if (result.releaseYear) {<span class="year"> ({{ result.releaseYear }})</span>}
               </h2>
               @if (result.originalName && result.originalName !== result.name) {
                 <p class="meta">{{ result.originalName }}</p>

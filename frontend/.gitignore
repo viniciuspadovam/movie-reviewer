@@ -45,3 +45,5 @@ Thumbs.db
 
 # Local scratch scripts
 *.tmp.*
+/test-results
+/playwright-report

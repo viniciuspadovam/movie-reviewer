@@ -6,7 +6,7 @@
       <app-poster [path]="title.posterPath" [name]="title.name" size="w185" />
       <div>
         <p class="meta">{{ isEditing() ? 'Editando review de' : 'Nova sessão de' }}</p>
-        <h1>{{ title.name }}@if (title.releaseYear) { <span class="year">({{ title.releaseYear }})</span>}</h1>
+        <h1>{{ title.name }}@if (title.releaseYear) {<span class="year"> ({{ title.releaseYear }})</span>}</h1>
         <p class="head-links">
           <a [routerLink]="['/admin']">Voltar ao painel</a>
           <button type="button" class="link-danger" (click)="deleteTitle()">Excluir obra</button>
@@ -47,9 +47,9 @@
 
       <div class="writing">
         <div class="field">
-          <label for="content">Texto (Markdown)</label>
+          <label for="review-content">Texto (Markdown)</label>
           <textarea
-            id="content"
+            id="review-content"
             class="input"
             rows="18"
             [value]="content()"
