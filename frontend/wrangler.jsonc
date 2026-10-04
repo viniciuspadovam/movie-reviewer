@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pos-creditos",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist/frontend/browser",
+    "not_found_handling": "single-page-application"
+  }
+  // After the domain is on Cloudflare, attach it here so the Worker answers on <domain>:
+  // "routes": [{ "pattern": "example.com", "custom_domain": true }]
+}

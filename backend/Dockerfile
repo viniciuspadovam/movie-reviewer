@@ -1,4 +1,5 @@
-FROM eclipse-temurin:25-jdk AS build
+# The jar is platform-independent: build it natively and emulate only the runtime image (e.g. arm64 on x64 CI).
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
 COPY .mvn .mvn
 COPY mvnw pom.xml ./
