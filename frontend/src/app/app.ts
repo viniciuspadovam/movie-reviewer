@@ -17,7 +17,7 @@ export class App {
   private readonly router = inject(Router);
 
   constructor() {
-    void this.auth.ensureLoaded();
+    this.auth.restoreIfRemembered();
   }
 
   protected async logout(): Promise<void> {

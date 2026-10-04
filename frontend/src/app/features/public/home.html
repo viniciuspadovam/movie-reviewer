@@ -1,0 +1,61 @@
+<div class="page">
+  @if (lead(); as lead) {
+    <article class="lead">
+      <a class="lead-poster" [routerLink]="['/title', lead.title.slug]" tabindex="-1" aria-hidden="true">
+        <app-poster [path]="lead.title.posterPath" [name]="lead.title.name" size="w500" />
+      </a>
+      <div class="lead-body">
+        <h1><a [routerLink]="['/review', lead.id]">{{ lead.title.name }}</a></h1>
+        <p class="meta">
+          {{ mediaTypeLabel(lead.title.mediaType) }}@if (lead.title.releaseYear) { de {{ lead.title.releaseYear }}},
+          assistido em {{ formatDate(lead.watchedOn) }}
+        </p>
+        <app-star-rating class="lead-rating" [rating]="lead.rating" [showNumber]="true" />
+        <app-spoiler-guard [hasSpoilers]="lead.hasSpoilers">
+          <p class="lead-excerpt">{{ lead.excerpt }}</p>
+        </app-spoiler-guard>
+        <a class="button button-primary" [routerLink]="['/review', lead.id]">Ler a review</a>
+      </div>
+    </article>
+  }
+
+  @if (others().length) {
+    <h2 class="list-heading">Reviews anteriores</h2>
+    <ul class="review-list">
+      @for (review of others(); track review.id) {
+        <li>
+          <a class="thumb" [routerLink]="['/title', review.title.slug]" tabindex="-1" aria-hidden="true">
+            <app-poster [path]="review.title.posterPath" [name]="review.title.name" size="w185" />
+          </a>
+          <div>
+            <h3><a [routerLink]="['/review', review.id]">{{ review.title.name }}</a></h3>
+            <p class="meta">
+              {{ mediaTypeLabel(review.title.mediaType) }}@if (review.title.releaseYear) { de {{ review.title.releaseYear }}},
+              assistido em {{ formatDate(review.watchedOn) }}
+            </p>
+            <app-star-rating [rating]="review.rating" [showNumber]="true" />
+            <app-spoiler-guard [hasSpoilers]="review.hasSpoilers">
+              <p class="excerpt">{{ review.excerpt }}</p>
+            </app-spoiler-guard>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (error(); as error) {
+    <p class="error-text" role="alert">{{ error }}</p>
+    <button type="button" class="button" (click)="loadMore()">Tentar de novo</button>
+  } @else if (loading()) {
+    <p class="meta" aria-live="polite">Carregando reviews…</p>
+  } @else if (!lead()) {
+    <div class="empty-state">
+      <p>Nenhuma review publicada ainda.</p>
+      @if (auth.isLoggedIn()) {
+        <p><a routerLink="/admin/new">Escrever a primeira review</a></p>
+      }
+    </div>
+  } @else if (hasMore()) {
+    <button type="button" class="button more" (click)="loadMore()">Carregar mais reviews</button>
+  }
+</div>

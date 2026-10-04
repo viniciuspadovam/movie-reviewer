@@ -1,0 +1,77 @@
+@if (notFound()) {
+  <app-not-found />
+} @else if (errorText(); as errorText) {
+  <div class="page">
+    <p class="error-text" role="alert">{{ errorText }}</p>
+    <button type="button" class="button" (click)="page.reload()">Tentar de novo</button>
+  </div>
+} @else if (page.hasValue()) {
+  @let titlePage = page.value();
+  <header class="hero" [style.--backdrop]="backdrop()">
+    <div class="hero-inner">
+      <app-poster class="hero-poster" [path]="titlePage.title.posterPath" [name]="titlePage.title.name" size="w500" />
+      <div class="hero-body">
+        <h1>{{ titlePage.title.name }}</h1>
+        @if (titlePage.title.originalName && titlePage.title.originalName !== titlePage.title.name) {
+          <p class="original">{{ titlePage.title.originalName }}</p>
+        }
+        <p class="meta">{{ details(titlePage.title) }}</p>
+        @if (titlePage.title.genres.length) {
+          <ul class="genres" aria-label="Gêneros">
+            @for (genre of titlePage.title.genres; track genre.id) {
+              <li><a [routerLink]="['/search']" [queryParams]="{ genre: genre.id }">{{ genre.name }}</a></li>
+            }
+          </ul>
+        }
+        <div class="current">
+          <span class="meta">Nota atual</span>
+          <app-star-rating [rating]="titlePage.currentRating" [showNumber]="true" />
+        </div>
+        @if (titlePage.title.overview) {
+          <p class="overview">{{ titlePage.title.overview }}</p>
+        }
+      </div>
+    </div>
+  </header>
+
+  <section class="page sessions" aria-labelledby="sessions-heading">
+    <h2 id="sessions-heading">
+      {{ titlePage.sessions.length === 1 ? 'Uma sessão' : titlePage.sessions.length + ' sessões' }}
+    </h2>
+    <ol class="timeline">
+      @for (session of titlePage.sessions; track session.id) {
+        <li>
+          <span class="dot" aria-hidden="true"></span>
+          <div class="session-head">
+            <h3>{{ sessionLabel(session.sessionNumber) }}</h3>
+            <span class="meta">{{ formatDate(session.watchedOn) }}</span>
+          </div>
+          <div class="session-rating">
+            <app-star-rating [rating]="session.rating" [showNumber]="true" />
+            @if (session.ratingDelta !== null) {
+              <span
+                class="delta"
+                [class.up]="session.ratingDelta > 0"
+                [class.down]="session.ratingDelta < 0"
+                [attr.aria-label]="'Variação em relação à sessão anterior: ' + ratingDeltaLabel(session.ratingDelta)"
+              >
+                {{ ratingDeltaLabel(session.ratingDelta) }}
+              </span>
+            }
+          </div>
+          <app-spoiler-guard [hasSpoilers]="session.hasSpoilers">
+            <p class="excerpt">{{ session.excerpt }}</p>
+          </app-spoiler-guard>
+          <p class="session-foot">
+            <a [routerLink]="['/review', session.id]">Ler a review completa</a>
+            @if (session.editedAt) {
+              <span class="meta">Editada em {{ formatDateTime(session.editedAt) }}</span>
+            }
+          </p>
+        </li>
+      }
+    </ol>
+  </section>
+} @else {
+  <p class="page meta" aria-live="polite">Carregando…</p>
+}

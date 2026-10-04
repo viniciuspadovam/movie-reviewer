@@ -1,0 +1,144 @@
+<div class="page">
+  <h1>Buscar</h1>
+
+  <form class="query" role="search" (submit)="submitQuery($event, queryInput.value)">
+    <label class="visually-hidden" for="search-query">Buscar por título ou trecho de review</label>
+    <input
+      #queryInput
+      id="search-query"
+      class="input"
+      type="search"
+      placeholder="Título, ator citado, uma cena…"
+      [value]="filters().q ?? ''"
+      maxlength="200"
+    />
+    <button type="submit" class="button button-primary">Buscar</button>
+  </form>
+
+  <fieldset class="filters">
+    <legend class="visually-hidden">Filtros</legend>
+
+    <div class="field">
+      <label for="filter-type">Tipo</label>
+      <select id="filter-type" class="input" [value]="filters().type ?? ''" (change)="apply({ type: typeValue($event) })">
+        <option value="">Filmes e séries</option>
+        <option value="MOVIE">Filmes</option>
+        <option value="SERIES">Séries</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="filter-genre">Gênero</label>
+      <select id="filter-genre" class="input" (change)="apply({ genre: numberValue($event) })">
+        <option value="" [selected]="!filters().genre">Todos</option>
+        @for (genre of genres.hasValue() ? genres.value() : []; track genre.id) {
+          <option [value]="genre.id" [selected]="filters().genre === genre.id">{{ genre.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="filter-min">Nota mínima</label>
+      <select id="filter-min" class="input" (change)="apply({ minRating: numberValue($event) })">
+        <option value="" [selected]="!filters().minRating">Qualquer</option>
+        @for (rating of ratingOptions; track rating) {
+          <option [value]="rating" [selected]="filters().minRating === rating">{{ starsLabel(rating) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="filter-max">Nota máxima</label>
+      <select id="filter-max" class="input" (change)="apply({ maxRating: numberValue($event) })">
+        <option value="" [selected]="!filters().maxRating">Qualquer</option>
+        @for (rating of ratingOptions; track rating) {
+          <option [value]="rating" [selected]="filters().maxRating === rating">{{ starsLabel(rating) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="filter-year">Ano de lançamento</label>
+      <input
+        id="filter-year"
+        class="input"
+        type="number"
+        inputmode="numeric"
+        min="1870"
+        max="2200"
+        placeholder="Ex.: 1999"
+        [value]="filters().year ?? ''"
+        (change)="apply({ year: numberValue($event) })"
+      />
+    </div>
+
+    <div class="field">
+      <label for="filter-sort">Ordenar por</label>
+      <select id="filter-sort" class="input" [value]="filters().sort" (change)="apply({ sort: sortValue($event) })">
+        <option value="RECENT">Mais recentes</option>
+        <option value="RATING">Maior nota</option>
+        <option value="TITLE">Título</option>
+      </select>
+    </div>
+  </fieldset>
+
+  <div aria-live="polite">
+    @if (errorText(); as errorText) {
+      <p class="error-text" role="alert">{{ errorText }}</p>
+    } @else if (results.hasValue()) {
+      @let found = results.value();
+      <p class="meta count">
+        {{ found.totalItems === 1 ? '1 obra encontrada' : found.totalItems + ' obras encontradas' }}
+      </p>
+
+      @if (found.items.length) {
+        <ul class="results">
+          @for (item of found.items; track item.id) {
+            <li>
+              <a class="result" [routerLink]="['/title', item.slug]">
+                <app-poster [path]="item.posterPath" [name]="item.name" size="w185" />
+                <span class="result-body">
+                  <span class="result-name">{{ item.name }}</span>
+                  <span class="meta">
+                    {{ mediaTypeLabel(item.mediaType) }}@if (item.releaseYear) { de {{ item.releaseYear }}},
+                    {{ item.sessionCount === 1 ? '1 sessão' : item.sessionCount + ' sessões' }}
+                  </span>
+                  <app-star-rating [rating]="item.currentRating" [showNumber]="true" />
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+
+        @if (found.totalPages > 1) {
+          <nav class="pager" aria-label="Páginas de resultado">
+            <button
+              type="button"
+              class="button"
+              [disabled]="found.page === 0"
+              (click)="apply({ page: found.page - 1 })"
+            >
+              Anterior
+            </button>
+            <span class="meta">Página {{ found.page + 1 }} de {{ found.totalPages }}</span>
+            <button
+              type="button"
+              class="button"
+              [disabled]="found.page + 1 >= found.totalPages"
+              (click)="apply({ page: found.page + 1 })"
+            >
+              Próxima
+            </button>
+          </nav>
+        }
+      } @else {
+        <div class="empty-state">
+          <p>Nada encontrado com esses filtros.</p>
+          <button type="button" class="button" (click)="clear()">Limpar busca e filtros</button>
+        </div>
+      }
+    } @else {
+      <p class="meta">Buscando…</p>
+    }
+  </div>
+</div>

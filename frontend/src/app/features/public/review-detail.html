@@ -1,0 +1,58 @@
+@if (notFound()) {
+  <app-not-found />
+} @else if (errorText(); as errorText) {
+  <div class="page">
+    <p class="error-text" role="alert">{{ errorText }}</p>
+    <button type="button" class="button" (click)="review.reload()">Tentar de novo</button>
+  </div>
+} @else if (review.hasValue()) {
+  @let detail = review.value();
+  <article class="page review">
+    <header class="review-head">
+      <a class="poster-link" [routerLink]="['/title', detail.title.slug]" tabindex="-1" aria-hidden="true">
+        <app-poster [path]="detail.title.posterPath" [name]="detail.title.name" size="w185" />
+      </a>
+      <div class="head-body">
+        <p class="title-link">
+          <a [routerLink]="['/title', detail.title.slug]">
+            {{ detail.title.name }}@if (detail.title.releaseYear) { ({{ detail.title.releaseYear }})}
+          </a>
+        </p>
+        <h1>{{ sessionLabel(detail.sessionNumber) }}</h1>
+        <p class="meta">Assistido em {{ formatDate(detail.watchedOn) }}</p>
+        <app-star-rating class="rating" [rating]="detail.rating" [showNumber]="true" />
+      </div>
+    </header>
+
+    <app-spoiler-guard [hasSpoilers]="detail.hasSpoilers">
+      <app-markdown [source]="detail.content" />
+    </app-spoiler-guard>
+
+    <footer class="review-foot">
+      <p class="meta">
+        Publicada em {{ formatDateTime(detail.publishedAt) }}@if (detail.editedAt) {. Editada em {{ formatDateTime(detail.editedAt) }}}.
+      </p>
+
+      @if (detail.sessions.length > 1) {
+        <nav aria-labelledby="other-sessions">
+          <h2 id="other-sessions">Todas as sessões de {{ detail.title.name }}</h2>
+          <ol class="sessions">
+            @for (session of detail.sessions; track session.id) {
+              <li>
+                @if (session.id === detail.id) {
+                  <span aria-current="page">{{ sessionLabel(session.sessionNumber) }}</span>
+                } @else {
+                  <a [routerLink]="['/review', session.id]">{{ sessionLabel(session.sessionNumber) }}</a>
+                }
+                <span class="meta">{{ formatDate(session.watchedOn) }}</span>
+                <app-star-rating [rating]="session.rating" />
+              </li>
+            }
+          </ol>
+        </nav>
+      }
+    </footer>
+  </article>
+} @else {
+  <p class="page meta" aria-live="polite">Carregando…</p>
+}
