@@ -1,0 +1,60 @@
+<div class="page">
+  <h1>Nova review</h1>
+  <p class="lead">Escolha a obra. Se ela já tiver reviews, a nova entra como mais uma sessão.</p>
+
+  <form class="search" (submit)="search($event, query.value)">
+    <fieldset class="type">
+      <legend class="visually-hidden">Tipo</legend>
+      <label>
+        <input type="radio" name="type" [checked]="mediaType() === 'MOVIE'" (change)="mediaType.set('MOVIE')" />
+        Filme
+      </label>
+      <label>
+        <input type="radio" name="type" [checked]="mediaType() === 'SERIES'" (change)="mediaType.set('SERIES')" />
+        Série
+      </label>
+    </fieldset>
+    <label class="visually-hidden" for="tmdb-query">Nome da obra</label>
+    <input #query id="tmdb-query" class="input" type="search" placeholder="Nome do filme ou da série" autofocus />
+    <button type="submit" class="button button-primary" [disabled]="searching()">
+      {{ searching() ? 'Buscando…' : 'Buscar no TMDB' }}
+    </button>
+  </form>
+
+  @if (error(); as error) {
+    <p class="error-text" role="alert">{{ error }}</p>
+  }
+
+  @if (results(); as results) {
+    @if (results.length) {
+      <ul class="results">
+        @for (result of results; track result.tmdbId) {
+          <li>
+            <app-poster [path]="result.posterPath" [name]="result.name" size="w185" />
+            <div class="result-body">
+              <h2>
+                {{ result.name }}@if (result.releaseYear) { <span class="year">({{ result.releaseYear }})</span>}
+              </h2>
+              @if (result.originalName && result.originalName !== result.name) {
+                <p class="meta">{{ result.originalName }}</p>
+              }
+              @if (result.overview) {
+                <p class="overview">{{ result.overview }}</p>
+              }
+              <button
+                type="button"
+                class="button"
+                [disabled]="importingId() !== null"
+                (click)="choose(result)"
+              >
+                {{ importingId() === result.tmdbId ? 'Preparando…' : 'Escrever review' }}
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="empty-state">Nada encontrado no TMDB. Tente outro nome ou troque entre filme e série.</p>
+    }
+  }
+</div>

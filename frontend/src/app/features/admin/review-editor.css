@@ -1,0 +1,80 @@
+.editor-head {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: end;
+  margin-bottom: var(--space-6);
+}
+
+.year {
+  margin-left: 0.25em;
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.head-links {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.editor {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4) var(--space-6);
+}
+
+.settings .input {
+  width: auto;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  cursor: pointer;
+}
+
+.writing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+textarea.input {
+  resize: vertical;
+  font-family: var(--font-serif);
+  font-size: var(--text-md);
+  line-height: var(--leading-body);
+}
+
+.preview {
+  padding: var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  overflow-wrap: anywhere;
+}
+
+.preview > .meta:first-child {
+  margin-bottom: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 52rem) {
+  .writing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

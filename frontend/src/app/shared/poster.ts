@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, linkedSignal } from '@angular/core';
 
 import { PosterSize, posterUrl } from '../core/format';
 
@@ -6,8 +6,8 @@ import { PosterSize, posterUrl } from '../core/format';
   selector: 'app-poster',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (src(); as src) {
-      <img [src]="src" [alt]="'Pôster de ' + name()" loading="lazy" decoding="async" />
+    @if (src() && !failed()) {
+      <img [src]="src()" [alt]="'Pôster de ' + name()" loading="lazy" decoding="async" (error)="failed.set(true)" />
     } @else {
       <span class="placeholder" aria-hidden="true">{{ name() }}</span>
     }
@@ -44,4 +44,5 @@ export class Poster {
   readonly size = input<PosterSize>('w342');
 
   protected readonly src = computed(() => posterUrl(this.path(), this.size()));
+  protected readonly failed = linkedSignal({ source: this.src, computation: () => false });
 }

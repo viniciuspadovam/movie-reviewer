@@ -1,0 +1,81 @@
+<div class="page">
+  <div class="toolbar">
+    <h1>Reviews</h1>
+    <a class="button button-primary" routerLink="/admin/new">Nova review</a>
+  </div>
+
+  <nav class="tabs" aria-label="Filtrar por status">
+    @for (filter of filters; track filter.label) {
+      <a
+        [routerLink]="['/admin']"
+        [queryParams]="{ status: filter.status }"
+        [attr.aria-current]="currentStatus() === filter.status ? 'page' : null"
+      >
+        {{ filter.label }}
+      </a>
+    }
+  </nav>
+
+  @if (actionError(); as actionError) {
+    <p class="error-text" role="alert">{{ actionError }}</p>
+  }
+
+  @if (errorText(); as errorText) {
+    <p class="error-text" role="alert">{{ errorText }}</p>
+    <button type="button" class="button" (click)="reviews.reload()">Tentar de novo</button>
+  } @else if (reviews.hasValue()) {
+    @let found = reviews.value();
+    @if (found.items.length) {
+      <ul class="rows">
+        @for (review of found.items; track review.id) {
+          <li class="row">
+            <div class="row-main">
+              <a class="row-title" [routerLink]="['/admin/reviews', review.id, 'edit']">{{ review.title.name }}</a>
+              <span class="meta">Assistido em {{ formatDate(review.watchedOn) }}</span>
+              <app-star-rating [rating]="review.rating" [showNumber]="true" />
+            </div>
+            <div class="row-side">
+              <span class="status" [class.draft]="review.status === 'DRAFT'">
+                {{ review.status === 'DRAFT' ? 'Rascunho' : 'Publicada' }}
+              </span>
+              <span class="meta">Alterada em {{ formatDateTime(review.updatedAt) }}</span>
+              <div class="row-actions">
+                @if (review.status === 'PUBLISHED') {
+                  <a [routerLink]="['/review', review.id]">Ver</a>
+                }
+                <a [routerLink]="['/admin/reviews', review.id, 'edit']">Editar</a>
+                <button type="button" class="link-danger" (click)="remove(review)">Excluir</button>
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+
+      @if (found.totalPages > 1) {
+        <nav class="pager" aria-label="Páginas">
+          <button type="button" class="button" [disabled]="found.page === 0" (click)="goToPage(found.page - 1)">
+            Anterior
+          </button>
+          <span class="meta">Página {{ found.page + 1 }} de {{ found.totalPages }}</span>
+          <button
+            type="button"
+            class="button"
+            [disabled]="found.page + 1 >= found.totalPages"
+            (click)="goToPage(found.page + 1)"
+          >
+            Próxima
+          </button>
+        </nav>
+      }
+    } @else {
+      <div class="empty-state">
+        <p>{{ currentStatus() === 'DRAFT' ? 'Nenhum rascunho.' : 'Nenhuma review ainda.' }}</p>
+        <p><a routerLink="/admin/new">Escrever uma review</a></p>
+      </div>
+    }
+  } @else {
+    <p class="meta">Carregando…</p>
+  }
+</div>
+
+<app-confirm-dialog />

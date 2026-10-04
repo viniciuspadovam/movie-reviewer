@@ -1,0 +1,100 @@
+<div class="page">
+  @if (loading()) {
+    <p class="meta">Carregando…</p>
+  } @else if (title(); as title) {
+    <header class="editor-head">
+      <app-poster [path]="title.posterPath" [name]="title.name" size="w185" />
+      <div>
+        <p class="meta">{{ isEditing() ? 'Editando review de' : 'Nova sessão de' }}</p>
+        <h1>{{ title.name }}@if (title.releaseYear) { <span class="year">({{ title.releaseYear }})</span>}</h1>
+        <p class="head-links">
+          <a [routerLink]="['/admin']">Voltar ao painel</a>
+          <button type="button" class="link-danger" (click)="deleteTitle()">Excluir obra</button>
+        </p>
+      </div>
+    </header>
+
+    <form class="editor" (submit)="save($event, isPublished() ? 'PUBLISHED' : 'DRAFT')" novalidate>
+      <div class="settings">
+        <div class="field">
+          <label for="watched-on">Assistido em</label>
+          <input
+            id="watched-on"
+            class="input"
+            type="date"
+            required
+            [max]="today"
+            [value]="watchedOn()"
+            (input)="watchedOn.set(inputValue($event))"
+          />
+          @if (errors()['watchedOn']; as message) {
+            <span class="error-text">{{ message }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <app-star-input [(rating)]="rating" />
+          @if (errors()['rating']; as message) {
+            <span class="error-text">{{ message }}</span>
+          }
+        </div>
+
+        <label class="checkbox">
+          <input type="checkbox" [checked]="hasSpoilers()" (change)="hasSpoilers.set(checked($event))" />
+          Contém spoilers
+        </label>
+      </div>
+
+      <div class="writing">
+        <div class="field">
+          <label for="content">Texto (Markdown)</label>
+          <textarea
+            id="content"
+            class="input"
+            rows="18"
+            [value]="content()"
+            (input)="content.set(inputValue($event))"
+          ></textarea>
+          @if (errors()['content']; as message) {
+            <span class="error-text">{{ message }}</span>
+          }
+        </div>
+        <section class="preview" aria-label="Prévia">
+          <p class="meta">Prévia</p>
+          @if (content().trim()) {
+            <app-markdown [source]="content()" />
+          } @else {
+            <p class="meta">O texto formatado aparece aqui.</p>
+          }
+        </section>
+      </div>
+
+      @if (error(); as error) {
+        <p class="error-text" role="alert">{{ error }}</p>
+      }
+
+      <div class="actions">
+        @if (isPublished()) {
+          <button type="button" class="button" [disabled]="saving()" (click)="save($event, 'DRAFT')">
+            Voltar para rascunho
+          </button>
+          <button type="button" class="button button-primary" [disabled]="saving()" (click)="save($event, 'PUBLISHED')">
+            Salvar alterações
+          </button>
+        } @else {
+          <button type="button" class="button" [disabled]="saving()" (click)="save($event, 'DRAFT')">
+            Salvar rascunho
+          </button>
+          <button type="button" class="button button-primary" [disabled]="saving()" (click)="save($event, 'PUBLISHED')">
+            Publicar
+          </button>
+        }
+      </div>
+    </form>
+  } @else if (error(); as error) {
+    <p class="error-text" role="alert">{{ error }}</p>
+    <p><a routerLink="/admin">Voltar ao painel</a></p>
+  }
+</div>
+
+<app-confirm-dialog />
