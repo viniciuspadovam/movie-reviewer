@@ -7,26 +7,46 @@ async function searchStubTitle(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Buscar no TMDB' }).click();
 }
 
-async function startNewSession(page: Page, watchedOn: string, halfStars: number, text: string): Promise<void> {
+async function startNewSession(
+  page: Page,
+  watchedOn: string,
+  halfStars: number,
+  text: string,
+): Promise<void> {
   await searchStubTitle(page);
   await page.getByRole('button', { name: 'Escrever review' }).first().click();
   await expect(page.getByText('Nova sessão de')).toBeVisible();
   await fillEditor(page, watchedOn, halfStars, text);
 }
 
-async function publishSession(page: Page, watchedOn: string, halfStars: number, text: string): Promise<void> {
+async function publishSession(
+  page: Page,
+  watchedOn: string,
+  halfStars: number,
+  text: string,
+): Promise<void> {
   await startNewSession(page, watchedOn, halfStars, text);
   await page.getByRole('button', { name: 'Publicar' }).click();
   await expect(page).toHaveURL(/\/review\/\d+$/);
 }
 
-async function fillEditor(page: Page, watchedOn: string, halfStars: number, text: string): Promise<void> {
+async function fillEditor(
+  page: Page,
+  watchedOn: string,
+  halfStars: number,
+  text: string,
+): Promise<void> {
   await page.getByLabel('Assistido em').fill(watchedOn);
-  await page.locator('app-star-input label').nth(halfStars - 1).click();
+  await page
+    .locator('app-star-input label')
+    .nth(halfStars - 1)
+    .click();
   await page.getByLabel('Texto (Markdown)').fill(text);
 }
 
-test('owner writes and rewatches a title; visitors see only what was published', async ({ page }) => {
+test('owner writes and rewatches a title; visitors see only what was published', async ({
+  page,
+}) => {
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/login/);
   await page.getByLabel('Usuário').fill('admin');
@@ -35,7 +55,10 @@ test('owner writes and rewatches a title; visitors see only what was published',
   await expect(page.getByRole('heading', { name: 'Reviews' })).toBeVisible();
 
   await searchStubTitle(page);
-  const titleName = (await page.locator('.results h2').first().innerText()).replace(/\s*\(\d{4}\)$/, '');
+  const titleName = (await page.locator('.results h2').first().innerText()).replace(
+    /\s*\(\d{4}\)$/,
+    '',
+  );
 
   await publishSession(page, '2020-01-10', 6, 'Primeira sessão: achei frio.');
   await publishSession(page, '2024-03-05', 9, 'Segunda sessão: virou favorito.');
@@ -47,7 +70,9 @@ test('owner writes and rewatches a title; visitors see only what was published',
     .filter({ hasText: '10 de jan. de 2020' })
     .getByRole('link', { name: 'Editar' })
     .click();
-  await page.getByLabel('Texto (Markdown)').fill('Primeira sessão: achei frio, mas a trilha ficou.');
+  await page
+    .getByLabel('Texto (Markdown)')
+    .fill('Primeira sessão: achei frio, mas a trilha ficou.');
   await page.getByRole('button', { name: 'Salvar alterações' }).click();
   await expect(page.getByText(/Editada em/)).toBeVisible();
 

@@ -18,7 +18,9 @@ export class PublicApi {
   private readonly http = inject(HttpClient);
 
   latestReviews(page = 0, size = 10): Observable<Page<ReviewSummary>> {
-    return this.http.get<Page<ReviewSummary>>(apiUrl('/reviews/latest'), { params: { page, size } });
+    return this.http.get<Page<ReviewSummary>>(apiUrl('/reviews/latest'), {
+      params: { page, size },
+    });
   }
 
   review(id: number): Observable<ReviewDetail> {

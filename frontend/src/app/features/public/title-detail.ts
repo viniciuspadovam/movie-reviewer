@@ -7,7 +7,7 @@ import {
   backdropUrl,
   formatDate,
   formatDateTime,
-  mediaTypeLabel,
+  kindAndYear,
   ratingDeltaLabel,
   sessionLabel,
 } from '../../core/format';
@@ -61,10 +61,7 @@ export class TitleDetail {
   }
 
   protected details(title: Title): string {
-    const parts = [mediaTypeLabel(title.mediaType)];
-    if (title.releaseYear) {
-      parts[0] += ` de ${title.releaseYear}`;
-    }
+    const parts = [kindAndYear(title.mediaType, title.releaseYear)];
     if (title.runtimeMinutes) {
       parts.push(`${title.runtimeMinutes} min`);
     }

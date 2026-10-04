@@ -10,14 +10,20 @@ export interface ConfirmOptions {
   selector: 'app-confirm-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <dialog #dialog aria-labelledby="confirm-title" (close)="settle(dialog.returnValue === 'confirm')">
+    <dialog
+      #dialog
+      aria-labelledby="confirm-title"
+      (close)="settle(dialog.returnValue === 'confirm')"
+    >
       @if (options(); as options) {
         <form method="dialog">
           <h2 id="confirm-title">{{ options.title }}</h2>
           <p>{{ options.message }}</p>
           <div class="actions">
             <button type="submit" class="button" value="cancel" autofocus>Cancelar</button>
-            <button type="submit" class="button button-primary" value="confirm">{{ options.confirmLabel }}</button>
+            <button type="submit" class="button button-primary" value="confirm">
+              {{ options.confirmLabel }}
+            </button>
           </div>
         </form>
       }

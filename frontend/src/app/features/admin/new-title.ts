@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { AdminApi } from '../../core/admin-api';
 import { errorMessage } from '../../core/errors';
+import { nameWithYear } from '../../core/format';
 import { MediaType, TmdbSearchResult } from '../../core/models';
 import { Seo } from '../../core/seo';
 import { Poster } from '../../shared/poster';
@@ -18,6 +19,7 @@ import { Poster } from '../../shared/poster';
 export class NewTitle {
   private readonly api = inject(AdminApi);
   private readonly router = inject(Router);
+  protected readonly nameWithYear = nameWithYear;
 
   protected readonly mediaType = signal<MediaType>('MOVIE');
   protected readonly results = signal<TmdbSearchResult[] | null>(null);

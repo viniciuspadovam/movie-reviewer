@@ -14,7 +14,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { AdminApi } from '../../core/admin-api';
 import { errorMessage, fieldErrors } from '../../core/errors';
-import { todayIso } from '../../core/format';
+import { todayIso, nameWithYear } from '../../core/format';
 import { ReviewStatus, TitleSummary } from '../../core/models';
 import { Seo } from '../../core/seo';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
@@ -32,6 +32,7 @@ import { StarInput } from '../../shared/star-input';
 export class ReviewEditor implements OnInit {
   private readonly api = inject(AdminApi);
   private readonly router = inject(Router);
+  protected readonly nameWithYear = nameWithYear;
   private readonly seo = inject(Seo);
   private readonly confirm = viewChild.required(ConfirmDialog);
 

@@ -9,7 +9,10 @@ import { RouterLink } from '@angular/router';
     <section class="page">
       <h1>Essa sessão não existe</h1>
       <p class="lead">O endereço pode ter mudado ou a review ainda não foi publicada.</p>
-      <p><a routerLink="/">Voltar para as últimas reviews</a> ou <a routerLink="/search">buscar uma obra</a>.</p>
+      <p>
+        <a routerLink="/">Voltar para as últimas reviews</a> ou
+        <a routerLink="/search">buscar uma obra</a>.
+      </p>
     </section>
   `,
   styles: `

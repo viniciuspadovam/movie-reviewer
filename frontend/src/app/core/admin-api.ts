@@ -46,7 +46,9 @@ export class AdminApi {
   }
 
   searchTmdb(query: string, type: MediaType): Observable<TmdbSearchResult[]> {
-    return this.http.get<TmdbSearchResult[]>(apiUrl('/admin/tmdb/search'), { params: { q: query, type } });
+    return this.http.get<TmdbSearchResult[]>(apiUrl('/admin/tmdb/search'), {
+      params: { q: query, type },
+    });
   }
 
   importTitle(tmdbId: number, mediaType: MediaType): Observable<Title> {

@@ -2,7 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 import { ProblemDetail } from './models';
 
-export function errorMessage(error: unknown, fallback = 'Algo deu errado. Tente novamente.'): string {
+export function errorMessage(
+  error: unknown,
+  fallback = 'Algo deu errado. Tente novamente.',
+): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
       return 'Sem conexão com o servidor. Verifique sua internet e tente novamente.';

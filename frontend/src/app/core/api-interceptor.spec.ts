@@ -58,8 +58,12 @@ describe('apiInterceptor', () => {
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
     http.get(apiUrl('/admin/reviews')).subscribe({ error: () => undefined });
-    controller.expectOne(apiUrl('/admin/reviews')).flush(null, { status: 401, statusText: 'Unauthorized' });
+    controller
+      .expectOne(apiUrl('/admin/reviews'))
+      .flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { redirect: '/admin/reviews' } });
+    expect(navigate).toHaveBeenCalledWith(['/login'], {
+      queryParams: { redirect: '/admin/reviews' },
+    });
   });
 });

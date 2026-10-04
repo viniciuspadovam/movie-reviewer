@@ -5,7 +5,9 @@ import { SpoilerGuard } from './spoiler-guard';
 
 @Component({
   imports: [SpoilerGuard],
-  template: `<app-spoiler-guard [hasSpoilers]="hasSpoilers()"><p class="secret">O final</p></app-spoiler-guard>`,
+  template: `<app-spoiler-guard [hasSpoilers]="hasSpoilers()"
+    ><p class="secret">O final</p></app-spoiler-guard
+  >`,
 })
 class Host {
   readonly hasSpoilers = input(true);

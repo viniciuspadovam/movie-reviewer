@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -34,7 +42,9 @@ export class AdminReviews {
 
   protected readonly filters = FILTERS;
   protected readonly currentStatus = computed<ReviewStatus | null>(() =>
-    this.status() === 'DRAFT' || this.status() === 'PUBLISHED' ? (this.status() as ReviewStatus) : null,
+    this.status() === 'DRAFT' || this.status() === 'PUBLISHED'
+      ? (this.status() as ReviewStatus)
+      : null,
   );
   private readonly currentPage = computed(() => Math.max(0, Number(this.page() ?? 0) || 0));
 
@@ -44,7 +54,9 @@ export class AdminReviews {
   });
 
   protected readonly errorText = computed(() =>
-    this.reviews.error() ? errorMessage(this.reviews.error(), 'Não foi possível carregar as reviews.') : null,
+    this.reviews.error()
+      ? errorMessage(this.reviews.error(), 'Não foi possível carregar as reviews.')
+      : null,
   );
 
   protected readonly formatDate = formatDate;

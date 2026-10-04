@@ -9,17 +9,28 @@
   @let titlePage = page.value();
   <header class="hero" [style.--backdrop]="backdrop()">
     <div class="hero-inner">
-      <app-poster class="hero-poster" [path]="titlePage.title.posterPath" [name]="titlePage.title.name" size="w500" />
+      <app-poster
+        class="hero-poster"
+        [path]="titlePage.title.posterPath"
+        [name]="titlePage.title.name"
+        size="w500"
+      />
       <div class="hero-body">
         <h1>{{ titlePage.title.name }}</h1>
-        @if (titlePage.title.originalName && titlePage.title.originalName !== titlePage.title.name) {
+        @if (
+          titlePage.title.originalName && titlePage.title.originalName !== titlePage.title.name
+        ) {
           <p class="original">{{ titlePage.title.originalName }}</p>
         }
         <p class="meta">{{ details(titlePage.title) }}</p>
         @if (titlePage.title.genres.length) {
           <ul class="genres" aria-label="Gêneros">
             @for (genre of titlePage.title.genres; track genre.id) {
-              <li><a [routerLink]="['/search']" [queryParams]="{ genre: genre.id }">{{ genre.name }}</a></li>
+              <li>
+                <a [routerLink]="['/search']" [queryParams]="{ genre: genre.id }">{{
+                  genre.name
+                }}</a>
+              </li>
             }
           </ul>
         }
@@ -53,7 +64,9 @@
                 class="delta"
                 [class.up]="session.ratingDelta > 0"
                 [class.down]="session.ratingDelta < 0"
-                [attr.aria-label]="'Variação em relação à sessão anterior: ' + ratingDeltaLabel(session.ratingDelta)"
+                [attr.aria-label]="
+                  'Variação em relação à sessão anterior: ' + ratingDeltaLabel(session.ratingDelta)
+                "
               >
                 {{ ratingDeltaLabel(session.ratingDelta) }}
               </span>

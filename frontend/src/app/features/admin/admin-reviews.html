@@ -30,7 +30,9 @@
         @for (review of found.items; track review.id) {
           <li class="row">
             <div class="row-main">
-              <a class="row-title" [routerLink]="['/admin/reviews', review.id, 'edit']">{{ review.title.name }}</a>
+              <a class="row-title" [routerLink]="['/admin/reviews', review.id, 'edit']">{{
+                review.title.name
+              }}</a>
               <span class="meta">Assistido em {{ formatDate(review.watchedOn) }}</span>
               <app-star-rating [rating]="review.rating" [showNumber]="true" />
             </div>
@@ -53,7 +55,12 @@
 
       @if (found.totalPages > 1) {
         <nav class="pager" aria-label="Páginas">
-          <button type="button" class="button" [disabled]="found.page === 0" (click)="goToPage(found.page - 1)">
+          <button
+            type="button"
+            class="button"
+            [disabled]="found.page === 0"
+            (click)="goToPage(found.page - 1)"
+          >
             Anterior
           </button>
           <span class="meta">Página {{ found.page + 1 }} de {{ found.totalPages }}</span>

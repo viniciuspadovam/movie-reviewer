@@ -1,9 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, numberAttribute } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  numberAttribute,
+} from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import { errorMessage, isNotFound } from '../../core/errors';
-import { formatDate, formatDateTime, sessionLabel } from '../../core/format';
+import { formatDate, formatDateTime, sessionLabel, nameWithYear } from '../../core/format';
 import { PublicApi } from '../../core/public-api';
 import { Seo } from '../../core/seo';
 import { Markdown } from '../../shared/markdown';
@@ -30,12 +38,17 @@ export class ReviewDetailPage {
     stream: ({ params }) => this.api.review(params),
   });
 
-  protected readonly notFound = computed(() => isNotFound(this.review.error()) || Number.isNaN(this.id()));
+  protected readonly notFound = computed(
+    () => isNotFound(this.review.error()) || Number.isNaN(this.id()),
+  );
   protected readonly errorText = computed(() =>
-    this.review.error() ? errorMessage(this.review.error(), 'Não foi possível carregar a review.') : null,
+    this.review.error()
+      ? errorMessage(this.review.error(), 'Não foi possível carregar a review.')
+      : null,
   );
 
   protected readonly formatDate = formatDate;
+  protected readonly nameWithYear = nameWithYear;
   protected readonly formatDateTime = formatDateTime;
   protected readonly sessionLabel = sessionLabel;
 

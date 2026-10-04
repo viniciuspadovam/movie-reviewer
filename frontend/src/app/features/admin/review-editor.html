@@ -6,7 +6,9 @@
       <app-poster [path]="title.posterPath" [name]="title.name" size="w185" />
       <div>
         <p class="meta">{{ isEditing() ? 'Editando review de' : 'Nova sessão de' }}</p>
-        <h1>{{ title.name }}@if (title.releaseYear) {<span class="year"> ({{ title.releaseYear }})</span>}</h1>
+        <h1>
+          {{ nameWithYear(title.name, title.releaseYear) }}
+        </h1>
         <p class="head-links">
           <a [routerLink]="['/admin']">Voltar ao painel</a>
           <button type="button" class="link-danger" (click)="deleteTitle()">Excluir obra</button>
@@ -40,7 +42,11 @@
         </div>
 
         <label class="checkbox">
-          <input type="checkbox" [checked]="hasSpoilers()" (change)="hasSpoilers.set(checked($event))" />
+          <input
+            type="checkbox"
+            [checked]="hasSpoilers()"
+            (change)="hasSpoilers.set(checked($event))"
+          />
           Contém spoilers
         </label>
       </div>
@@ -75,17 +81,37 @@
 
       <div class="actions">
         @if (isPublished()) {
-          <button type="button" class="button" [disabled]="saving()" (click)="save($event, 'DRAFT')">
+          <button
+            type="button"
+            class="button"
+            [disabled]="saving()"
+            (click)="save($event, 'DRAFT')"
+          >
             Voltar para rascunho
           </button>
-          <button type="button" class="button button-primary" [disabled]="saving()" (click)="save($event, 'PUBLISHED')">
+          <button
+            type="button"
+            class="button button-primary"
+            [disabled]="saving()"
+            (click)="save($event, 'PUBLISHED')"
+          >
             Salvar alterações
           </button>
         } @else {
-          <button type="button" class="button" [disabled]="saving()" (click)="save($event, 'DRAFT')">
+          <button
+            type="button"
+            class="button"
+            [disabled]="saving()"
+            (click)="save($event, 'DRAFT')"
+          >
             Salvar rascunho
           </button>
-          <button type="button" class="button button-primary" [disabled]="saving()" (click)="save($event, 'PUBLISHED')">
+          <button
+            type="button"
+            class="button button-primary"
+            [disabled]="saving()"
+            (click)="save($event, 'PUBLISHED')"
+          >
             Publicar
           </button>
         }

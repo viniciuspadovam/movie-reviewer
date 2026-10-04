@@ -7,7 +7,13 @@ import { PosterSize, posterUrl } from '../core/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (src() && !failed()) {
-      <img [src]="src()" [alt]="'Pôster de ' + name()" loading="lazy" decoding="async" (error)="failed.set(true)" />
+      <img
+        [src]="src()"
+        [alt]="'Pôster de ' + name()"
+        loading="lazy"
+        decoding="async"
+        (error)="failed.set(true)"
+      />
     } @else {
       <span class="placeholder" aria-hidden="true">{{ name() }}</span>
     }

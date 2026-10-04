@@ -23,7 +23,9 @@ export class Theme {
     } else {
       delete root.dataset['theme'];
     }
-    this.document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[next]);
+    this.document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', THEME_COLORS[next]);
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {

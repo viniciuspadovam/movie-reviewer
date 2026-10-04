@@ -6,11 +6,6 @@
   margin-bottom: var(--space-6);
 }
 
-.year {
-  color: var(--color-text-muted);
-  font-weight: 400;
-}
-
 .head-links {
   display: flex;
   gap: var(--space-4);

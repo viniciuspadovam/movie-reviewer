@@ -50,11 +50,6 @@
   font-size: var(--text-lg);
 }
 
-.year {
-  color: var(--color-text-muted);
-  font-weight: 400;
-}
-
 .overview {
   max-width: var(--measure);
   font-family: var(--font-serif);

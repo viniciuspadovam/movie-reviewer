@@ -3,7 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
 import { errorMessage } from '../../core/errors';
-import { mediaTypeLabel, starsLabel } from '../../core/format';
+import { kindAndYear, starsLabel } from '../../core/format';
 import { MediaType, SearchFilters, SearchSort } from '../../core/models';
 import { PublicApi } from '../../core/public-api';
 import { Seo } from '../../core/seo';
@@ -27,6 +27,7 @@ function optionalNumber(value: string | undefined): number | undefined {
 export class Search {
   private readonly api = inject(PublicApi);
   private readonly router = inject(Router);
+  protected readonly kindAndYear = kindAndYear;
 
   readonly q = input<string>();
   readonly type = input<string>();
@@ -39,12 +40,14 @@ export class Search {
 
   protected readonly filters = computed<SearchFilters>(() => ({
     q: this.q()?.trim() || undefined,
-    type: this.type() === 'MOVIE' || this.type() === 'SERIES' ? (this.type() as MediaType) : undefined,
+    type:
+      this.type() === 'MOVIE' || this.type() === 'SERIES' ? (this.type() as MediaType) : undefined,
     genre: optionalNumber(this.genre()),
     minRating: optionalNumber(this.minRating()),
     maxRating: optionalNumber(this.maxRating()),
     year: optionalNumber(this.year()),
-    sort: (['RECENT', 'RATING', 'TITLE'] as const).find((value) => value === this.sort()) ?? 'RECENT',
+    sort:
+      (['RECENT', 'RATING', 'TITLE'] as const).find((value) => value === this.sort()) ?? 'RECENT',
     page: optionalNumber(this.page()) ?? 0,
   }));
 
@@ -56,12 +59,13 @@ export class Search {
   protected readonly genres = rxResource({ stream: () => this.api.genres() });
 
   protected readonly errorText = computed(() =>
-    this.results.error() ? errorMessage(this.results.error(), 'Não foi possível buscar agora.') : null,
+    this.results.error()
+      ? errorMessage(this.results.error(), 'Não foi possível buscar agora.')
+      : null,
   );
 
   protected readonly ratingOptions = RATING_OPTIONS;
   protected readonly starsLabel = starsLabel;
-  protected readonly mediaTypeLabel = mediaTypeLabel;
 
   constructor() {
     inject(Seo).set('Buscar');
@@ -102,6 +106,10 @@ export class Search {
   }
 
   private isDefault(key: string, value: unknown): boolean {
-    return value === undefined || (key === 'page' && value === 0) || (key === 'sort' && value === 'RECENT');
+    return (
+      value === undefined ||
+      (key === 'page' && value === 0) ||
+      (key === 'sort' && value === 'RECENT')
+    );
   }
 }

@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Auth } from '../../core/auth';
 import { errorMessage } from '../../core/errors';
-import { formatDate, mediaTypeLabel } from '../../core/format';
+import { formatDate, kindAndYear } from '../../core/format';
 import { ReviewSummary } from '../../core/models';
 import { PublicApi } from '../../core/public-api';
 import { Seo } from '../../core/seo';
@@ -35,7 +42,7 @@ export class Home implements OnInit {
   protected readonly hasMore = computed(() => this.nextPage() < this.totalPages());
 
   protected readonly formatDate = formatDate;
-  protected readonly mediaTypeLabel = mediaTypeLabel;
+  protected readonly kindAndYear = kindAndYear;
 
   constructor() {
     inject(Seo).set(null);

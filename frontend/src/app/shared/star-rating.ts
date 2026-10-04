@@ -18,7 +18,11 @@ type StarFill = 'full' | 'half' | 'empty';
           @if (fill === 'full') {
             <path class="fill" [attr.d]="starPath" />
           } @else if (fill === 'half') {
-            <path class="fill" [attr.d]="starPath" [attr.clip-path]="'url(#' + clipId + $index + ')'" />
+            <path
+              class="fill"
+              [attr.d]="starPath"
+              [attr.clip-path]="'url(#' + clipId + $index + ')'"
+            />
           }
         </svg>
       }

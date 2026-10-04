@@ -17,7 +17,9 @@ describe('Login', () => {
         },
       ],
     });
-    navigateByUrl = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true) as never;
+    navigateByUrl = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true) as never;
     const fixture = TestBed.createComponent(Login);
     if (redirect !== undefined) {
       fixture.componentRef.setInput('redirect', redirect);

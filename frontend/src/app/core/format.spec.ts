@@ -1,4 +1,12 @@
-import { formatDate, posterUrl, ratingDeltaLabel, sessionLabel, starsLabel } from './format';
+import {
+  formatDate,
+  kindAndYear,
+  nameWithYear,
+  posterUrl,
+  ratingDeltaLabel,
+  sessionLabel,
+  starsLabel,
+} from './format';
 
 describe('format', () => {
   it('turns half-star integers into a Portuguese star count', () => {
@@ -25,5 +33,12 @@ describe('format', () => {
 
   it('numbers sessions in Portuguese', () => {
     expect(sessionLabel(2)).toBe('2ª sessão');
+  });
+
+  it('describes titles with and without a release year', () => {
+    expect(kindAndYear('MOVIE', 1999)).toBe('Filme de 1999');
+    expect(kindAndYear('SERIES', null)).toBe('Série');
+    expect(nameWithYear('Dark', 2017)).toBe('Dark (2017)');
+    expect(nameWithYear('Dark', null)).toBe('Dark');
   });
 });
