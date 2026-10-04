@@ -1,0 +1,58 @@
+<a class="skip-link" href="#content">Pular para o conteúdo</a>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" routerLink="/" aria-label="Pós-Créditos, página inicial">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M14 26V14a8 8 0 0 1 8-8h4a8 8 0 0 1 8 8v12z" />
+        <rect x="6" y="20" width="6" height="22" rx="2" />
+        <rect x="36" y="20" width="6" height="22" rx="2" />
+        <rect x="13" y="28" width="22" height="9" rx="2" />
+        <rect x="15" y="37" width="3" height="5" />
+        <rect x="30" y="37" width="3" height="5" />
+      </svg>
+      <span>Pós-Créditos</span>
+    </a>
+
+    <nav aria-label="Principal">
+      <a routerLink="/search" routerLinkActive="active">Buscar</a>
+      @if (auth.isLoggedIn()) {
+        <a routerLink="/admin" routerLinkActive="active">Painel</a>
+        <button type="button" class="link-button" (click)="logout()">Sair</button>
+      }
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.name() === 'dark' ? 'Acender as luzes (tema claro)' : 'Apagar as luzes (tema escuro)'"
+        [attr.title]="theme.name() === 'dark' ? 'Tema claro' : 'Tema escuro'"
+      >
+        @if (theme.name() === 'dark') {
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" />
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+          </svg>
+        }
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="content">
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <div class="bar">
+    <p>Pós-Créditos. Reviews de filmes e séries, sessão por sessão.</p>
+    <p class="tmdb">
+      Dados e imagens de filmes e séries fornecidos pelo
+      <a href="https://www.themoviedb.org/" rel="noopener" target="_blank">TMDB</a>.
+      Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.
+    </p>
+  </div>
+</footer>
