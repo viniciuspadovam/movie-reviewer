@@ -1,5 +1,6 @@
 package com.moviereview.security;
 
+import static com.moviereview.TestRequests.adminSession;
 import static com.moviereview.TestRequests.fromIp;
 import static com.moviereview.TestRequests.fromNewIp;
 import static com.moviereview.TestRequests.xsrf;
@@ -48,6 +49,29 @@ class SecurityIntegrationTest {
 	void adminRoutesRejectAnonymousRequests() throws Exception {
 		mockMvc.perform(get("/api/v1/admin/reviews")).andExpect(status().isUnauthorized());
 		mockMvc.perform(post("/api/v1/admin/titles").with(xsrf())).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void adminWritesNeedTheCsrfTokenEvenWithAValidSession() throws Exception {
+		Cookie session = adminSession(mockMvc);
+
+		mockMvc.perform(post("/api/v1/admin/titles").cookie(session).contentType(MediaType.APPLICATION_JSON)
+			.content("{}"))
+			.andExpect(status().isForbidden());
+		mockMvc.perform(post("/api/v1/admin/titles").cookie(session, new Cookie("XSRF-TOKEN", "one"))
+			.header("X-XSRF-TOKEN", "other")
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("{}"))
+			.andExpect(status().isForbidden());
+		mockMvc.perform(post("/api/v1/admin/titles").cookie(session).with(xsrf()).contentType(MediaType.APPLICATION_JSON)
+			.content("{}"))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void anInvalidSessionCookieIsUnauthorizedOnAdminRoutes() throws Exception {
+		mockMvc.perform(get("/api/v1/admin/reviews").cookie(new Cookie(AuthCookies.AUTH_COOKIE, "garbage")))
+			.andExpect(status().isUnauthorized());
 	}
 
 	@Test

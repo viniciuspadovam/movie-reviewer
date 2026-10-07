@@ -7,13 +7,16 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -29,12 +32,17 @@ class SecurityConfig {
 	private static final String API = "/api/v1";
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthProperties authProperties) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http, AuthProperties authProperties, JwtDecoder jwtDecoder)
+			throws Exception {
 		http
 			.csrf(csrf -> csrf
 				.csrfTokenRepository(csrfTokenRepository(authProperties))
 				.csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
 			.addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
+			.addFilterBefore(new CookieAuthenticationFilter(jwtDecoder, API + "/admin/", API + "/auth/me"),
+					AuthorizationFilter.class)
+			.exceptionHandling(exceptions -> exceptions
+				.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
 			.cors(withDefaults())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.httpBasic(AbstractHttpConfigurer::disable)
@@ -46,10 +54,7 @@ class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, API + "/auth/login", API + "/auth/logout").permitAll()
 				.requestMatchers(API + "/auth/me", API + "/admin/**").authenticated()
 				.requestMatchers(HttpMethod.GET, API + "/**").permitAll()
-				.anyRequest().denyAll())
-			.oauth2ResourceServer(resourceServer -> resourceServer
-				.bearerTokenResolver(cookieTokenResolver())
-				.jwt(withDefaults()));
+				.anyRequest().denyAll());
 		return http.build();
 	}
 
@@ -68,15 +73,6 @@ class SecurityConfig {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration(API + "/**", config);
 		return source;
-	}
-
-	// Only protected routes read the cookie: a stale token must not turn public pages into 401s.
-	private static BearerTokenResolver cookieTokenResolver() {
-		return request -> {
-			String path = request.getRequestURI().substring(request.getContextPath().length());
-			boolean protectedPath = path.startsWith(API + "/admin/") || path.equals(API + "/auth/me");
-			return protectedPath ? AuthCookies.readToken(request) : null;
-		};
 	}
 
 	private static CookieCsrfTokenRepository csrfTokenRepository(AuthProperties properties) {
