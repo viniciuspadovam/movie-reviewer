@@ -8,3 +8,5 @@ app:
     cookie-secure: false
   tmdb:
     access-token: test-token
+  proxy:
+    shared-secret: test-proxy-secret

@@ -1,5 +1,6 @@
 package com.moviereview.security;
 
+import static com.moviereview.TestRequests.fromIp;
 import static com.moviereview.TestRequests.fromNewIp;
 import static com.moviereview.TestRequests.xsrf;
 import static org.hamcrest.Matchers.allOf;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import com.moviereview.IntegrationTest;
 
@@ -78,13 +80,26 @@ class SecurityIntegrationTest {
 	void sixthAttemptWithinWindowIsRateLimited() throws Exception {
 		String ip = UUID.randomUUID().toString();
 		for (int attempt = 0; attempt < 5; attempt++) {
-			mockMvc.perform(login(WRONG_LOGIN).with(xsrf()).header("CF-Connecting-IP", ip))
+			mockMvc.perform(login(WRONG_LOGIN).with(xsrf()).with(fromIp(ip)))
 				.andExpect(status().isUnauthorized());
 		}
 
-		mockMvc.perform(login(WRONG_LOGIN).with(xsrf()).header("CF-Connecting-IP", ip))
+		mockMvc.perform(login(WRONG_LOGIN).with(xsrf()).with(fromIp(ip)))
 			.andExpect(status().isTooManyRequests())
 			.andExpect(header().exists(HttpHeaders.RETRY_AFTER));
+	}
+
+	@Test
+	void spoofedClientIpWithoutTheProxySecretDoesNotDodgeTheLimit() throws Exception {
+		for (int attempt = 0; attempt < 5; attempt++) {
+			mockMvc.perform(login(WRONG_LOGIN).with(xsrf()).with(remoteAddress("10.9.8.7"))
+				.header("X-Client-IP", UUID.randomUUID().toString()))
+				.andExpect(status().isUnauthorized());
+		}
+
+		mockMvc.perform(login(WRONG_LOGIN).with(xsrf()).with(remoteAddress("10.9.8.7"))
+			.header("X-Client-IP", UUID.randomUUID().toString()))
+			.andExpect(status().isTooManyRequests());
 	}
 
 	@Test
@@ -106,6 +121,13 @@ class SecurityIntegrationTest {
 			.andExpect(cookie().exists("XSRF-TOKEN"))
 			.andExpect(cookie().httpOnly("XSRF-TOKEN", false))
 			.andExpect(cookie().sameSite("XSRF-TOKEN", "Strict"));
+	}
+
+	private static RequestPostProcessor remoteAddress(String address) {
+		return request -> {
+			request.setRemoteAddr(address);
+			return request;
+		};
 	}
 
 	private static MockHttpServletRequestBuilder login(String body) {

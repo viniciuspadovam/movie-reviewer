@@ -28,9 +28,13 @@ public final class TestRequests {
 	}
 
 	public static RequestPostProcessor fromNewIp() {
-		String ip = UUID.randomUUID().toString();
+		return fromIp(UUID.randomUUID().toString());
+	}
+
+	public static RequestPostProcessor fromIp(String ip) {
 		return request -> {
-			request.addHeader("CF-Connecting-IP", ip);
+			request.addHeader("X-Client-IP", ip);
+			request.addHeader("X-Proxy-Secret", "test-proxy-secret");
 			return request;
 		};
 	}

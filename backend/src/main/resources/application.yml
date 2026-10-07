@@ -16,7 +16,7 @@ spring:
     enabled: true
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   shutdown: graceful
 
 management:
@@ -53,3 +53,5 @@ app:
     access-token: ${TMDB_ACCESS_TOKEN:}
     language: pt-BR
     timeout: 5s
+  proxy:
+    shared-secret: ${PROXY_SHARED_SECRET:}
