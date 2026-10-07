@@ -5,8 +5,7 @@ on:
     branches: [main]
     paths:
       - 'backend/**'
-      - 'infra/docker-compose.yml'
-      - 'infra/*.sh'
+      - 'infra/render-cloud-run-env.py'
       - '.github/workflows/backend.yml'
   pull_request:
     paths:
@@ -20,9 +19,6 @@ permissions:
 concurrency:
   group: backend-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/movie-reviewer-api
 
 jobs:
   test:
@@ -40,60 +36,91 @@ jobs:
       - name: Unit and integration tests (Testcontainers)
         run: ./mvnw -B verify
 
-  image:
+  deploy:
     needs: test
-    # Turn on with the repository variable DEPLOY_ENABLED=true once the VM and secrets exist (docs/deploy.md).
+    # Liga com a variável de repositório DEPLOY_ENABLED=true quando o Google Cloud e os secrets estiverem prontos (docs/deploy.md).
     if: vars.DEPLOY_ENABLED == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
-      packages: write
+      id-token: write
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION }}
+      SERVICE: movie-review-api
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/movie-review/api:${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
-      - uses: docker/setup-qemu-action@v4
+
+      - name: Authenticate to Google Cloud (no stored key)
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github/providers/movie-reviewer
+          service_account: github-deployer@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          token_format: access_token
+
       - uses: docker/setup-buildx-action@v4
       - uses: docker/login-action@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push linux/arm64 image
+          registry: ${{ vars.GCP_REGION }}-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Build and push the linux/amd64 image (Cloud Run does not run ARM)
         uses: docker/build-push-action@v7
         with:
           context: backend
-          platforms: linux/arm64
+          platforms: linux/amd64
           push: true
-          tags: |
-            ${{ env.IMAGE }}:latest
-            ${{ env.IMAGE }}:${{ github.sha }}
+          provenance: false
+          tags: ${{ env.IMAGE }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: image
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v7
-      - name: Copy compose file and scripts to the VM
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          source: 'infra/docker-compose.yml,infra/backup.sh,infra/restore.sh'
-          target: /opt/movie-review
-          strip_components: 1
-      - name: Pull the new image and restart
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            set -e
-            cd /opt/movie-review
-            chmod +x backup.sh restore.sh
-            docker compose pull api
-            docker compose up -d --remove-orphans
-            docker image prune -f
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Build the service configuration
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          PROXY_SHARED_SECRET: ${{ secrets.PROXY_SHARED_SECRET }}
+          FRONTEND_ORIGIN: ${{ vars.FRONTEND_ORIGIN }}
+        run: python3 infra/render-cloud-run-env.py "$RUNNER_TEMP/cloud-run-env.yaml"
+
+      # max-instances=1 keeps the in-memory login rate limit consistent and caps the cost.
+      # min-instances=0 means the service costs nothing while idle (the first request after a pause is slower).
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --quiet \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --service-account "movie-review-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --allow-unauthenticated \
+            --port 8080 \
+            --cpu 1 --memory 512Mi --cpu-boost \
+            --min-instances 0 --max-instances 1 \
+            --concurrency 40 --timeout 60 \
+            --env-vars-file "$RUNNER_TEMP/cloud-run-env.yaml"
+
+      - name: Check the new revision and show the API address
+        run: |
+          url="$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+          curl --retry 6 --retry-delay 10 --retry-all-errors -fsS "$url/actuator/health"
+          echo
+          {
+            echo "### API no ar"
+            echo
+            echo "Endereço do Cloud Run: \`$url\`"
+            echo
+            echo "Na primeira vez, salve esse endereço na variável de repositório \`API_ORIGIN\` (docs/deploy.md)."
+          } >> "$GITHUB_STEP_SUMMARY"

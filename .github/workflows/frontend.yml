@@ -98,19 +98,21 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - name: Point the build at the production API
+      - run: npx ng build
+      - name: Check the deploy settings
         env:
-          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          API_ORIGIN: ${{ vars.API_ORIGIN }}
+          PROXY_SHARED_SECRET: ${{ secrets.PROXY_SHARED_SECRET }}
         run: |
-          if [ -z "$API_BASE_URL" ]; then
-            echo "::error::Defina a variável de repositório API_BASE_URL (ex.: https://api.seudominio.com)"
+          if [ -z "$API_ORIGIN" ] || [ -z "$PROXY_SHARED_SECRET" ]; then
+            echo "::error::Defina a variável API_ORIGIN (endereço do Cloud Run) e o secret PROXY_SHARED_SECRET (veja docs/deploy.md)"
             exit 1
           fi
-          sed -i "s#https://api.example.com#${API_BASE_URL}#" src/environments/environment.production.ts
-      - run: npx ng build
+          jq -n --arg secret "$PROXY_SHARED_SECRET" '{PROXY_SHARED_SECRET: $secret}' > "$RUNNER_TEMP/worker-secrets.json"
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: frontend
+          command: deploy --var API_ORIGIN:${{ vars.API_ORIGIN }} --secrets-file ${{ runner.temp }}/worker-secrets.json
