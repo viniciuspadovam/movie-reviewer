@@ -1,0 +1,54 @@
+name: backup
+
+# Cópia diária do banco (Neon) para o Cloudflare R2, com retenção de 30 dias.
+# Para restaurar, siga a seção "Restaurar um backup" de docs/deploy.md.
+on:
+  schedule:
+    - cron: '15 7 * * *' # 04:15 no horário de Brasília
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    # Liga com a variável de repositório DEPLOY_ENABLED=true, junto com o deploy (docs/deploy.md).
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      RCLONE_CONFIG_R2_TYPE: s3
+      RCLONE_CONFIG_R2_PROVIDER: Cloudflare
+      RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      RCLONE_CONFIG_R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      # The R2 token only reaches this bucket, so rclone must not try to create or check buckets.
+      RCLONE_CONFIG_R2_NO_CHECK_BUCKET: 'true'
+      RETENTION_DAYS: '30'
+    steps:
+      - name: Dump the database straight into R2
+        run: |
+          set -euo pipefail
+          for name in DB_HOST DB_NAME DB_USERNAME PGPASSWORD R2_BUCKET RCLONE_CONFIG_R2_ACCESS_KEY_ID RCLONE_CONFIG_R2_SECRET_ACCESS_KEY; do
+            if [ -z "${!name}" ]; then echo "::error::Falta o secret $name (veja docs/deploy.md)"; exit 1; fi
+          done
+          file="moviereview-$(date -u +%Y-%m-%dT%H-%M-%SZ).dump"
+          # docker run -e does not accept wildcards, so every rclone variable is passed by name.
+          rclone_env=(-e RCLONE_CONFIG_R2_TYPE -e RCLONE_CONFIG_R2_PROVIDER -e RCLONE_CONFIG_R2_ACCESS_KEY_ID
+            -e RCLONE_CONFIG_R2_SECRET_ACCESS_KEY -e RCLONE_CONFIG_R2_ENDPOINT -e RCLONE_CONFIG_R2_NO_CHECK_BUCKET)
+
+          docker run --rm -e PGPASSWORD -e PGSSLMODE=require postgres:18-alpine \
+            pg_dump -h "$DB_HOST" -U "$DB_USERNAME" -d "$DB_NAME" --format=custom --no-owner --no-acl \
+            | docker run --rm -i "${rclone_env[@]}" rclone/rclone:1 rcat "r2:$R2_BUCKET/$file"
+
+          bytes="$(docker run --rm "${rclone_env[@]}" rclone/rclone:1 size --json "r2:$R2_BUCKET/$file" | sed -E 's/.*"bytes":([0-9]+).*/\1/')"
+          echo "Backup $file: $bytes bytes"
+          if [ "$bytes" -lt 1024 ]; then echo "::error::Backup suspeito, só $bytes bytes"; exit 1; fi
+
+          docker run --rm "${rclone_env[@]}" rclone/rclone:1 delete --min-age "${RETENTION_DAYS}d" "r2:$R2_BUCKET"
+          echo "### Backup concluído" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`$file\` ($bytes bytes). Arquivos com mais de $RETENTION_DAYS dias foram removidos." >> "$GITHUB_STEP_SUMMARY"
