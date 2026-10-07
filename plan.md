@@ -1,5 +1,7 @@
 # Plano — Site pessoal de reviews de filmes e séries
 
+> **Atualização (outubro de 2026):** a hospedagem da API mudou. Em vez da VM Oracle com Cloudflare Tunnel, a API roda no **Google Cloud Run** com o banco no **Neon**, e o Worker da Cloudflare serve também `/api/*` na mesma origem. As seções "Stack decidida", "Fase 4" e "Verificação" abaixo descrevem o plano original. O que vale hoje está em `docs/deploy.md` e no `CLAUDE.md`.
+
 ## Contexto
 Site pessoal, do zero (diretório `d:\workspace\movie-review` está vazio), para publicar reviews de filmes e séries.
 - Leitura pública para qualquer visitante.
